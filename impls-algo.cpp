@@ -13,7 +13,7 @@ void toupper_rawloop_algo(char* buf, size_t size) {
 }
 
 void toupper_transform(char* buf, size_t size) {
-    std::transform(buf, buf + size, buf, [](char c){ return toupper(c); });
+    std::transform(buf, buf + size, buf, toupper);
 }
 
 void toupper_branch(char* buf, size_t size) {
