@@ -528,6 +528,7 @@ private:
 EventColumn EVENT_COLUMNS[] = {
 
         {"INSTRU", "%*.2f", INST_RETIRED_ANY, NoEvent},
+        {"CPU Cycles", "%*.2f", CPU_CLK_UNHALTED_THREAD, NoEvent},
         {"IPC", "%*.2f", INST_RETIRED_ANY, CPU_CLK_UNHALTED_THREAD},
         {"UPC", "%*.2f", UOPS_ISSUED_ANY, CPU_CLK_UNHALTED_THREAD},
         {"MLP1A", "%*.2f", L1D_PEND_MISS_PENDING, CPU_CLK_UNHALTED_THREAD},
@@ -827,7 +828,7 @@ int main(int argc, char** argv) {
     bool do_list_events  = getenv_bool("LIST_EVENTS");  // list the events and quit
     bool include_slow    = getenv_bool("INCLUDE_SLOW");
     std::string collist  = getenv_generic<std::string>(
-            "COLUMNS",
+            "COLS",
             "Cycles,INSTRU,IPC,UPC,LOADO %,MLP1A,MLP1B,LAT,ALL_LOAD,L1_MISS,L1_REPL");
 
     size_t size = getenv_int("SIZE", 2 * 1024);

@@ -22,6 +22,12 @@ T parse_from_string(const std::string& str) {
    ss >> result;
    return result;
 }
+
+/* in the case of a string, just return the entire string */
+template <>
+std::string parse_from_string<std::string>(const std::string& str) {
+   return str;
+}
 }
 
 struct envvar_not_found : public std::runtime_error {
@@ -30,7 +36,7 @@ struct envvar_not_found : public std::runtime_error {
 
 /**
  * Gets the value of the given environment variable, throws an
- * exception if not found. Usually you'll want the version that 
+ * exception if not found. Usually you'll want the version that
  * takes a default value.
  */
 template <typename T>
