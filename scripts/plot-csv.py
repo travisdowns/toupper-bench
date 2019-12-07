@@ -57,6 +57,7 @@ p.add_argument('--xrotate', help='rotate the xlablels by this amount', default=0
 p.add_argument('--tick-interval', help='use the given x-axis tick spacing (in x axis units)', type=int)
 p.add_argument('--marker', help='use the given marker', type=str)
 p.add_argument('--markersize', help='use the given marker', type=float)
+p.add_argument('--alpha', help='use the given alpha for marker/line', type=float)
 p.add_argument('--linewidth', help='use the given line width', type=float)
 p.add_argument('--tight', help='use tight_layout for less space around chart', action='store_true')
 
@@ -209,6 +210,9 @@ elif (args.marker):
 
 if (args.markersize):
     kwargs['markersize'] = args.markersize
+
+if (args.alpha):
+    kwargs['alpha'] = args.alpha
 
 # set x labels to strings so we don't get a scatter plot, and
 # so the x labels are not themselves plotted
