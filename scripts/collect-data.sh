@@ -24,3 +24,6 @@ $DRIVER --base-env="{\"CYCLE_TIMER_FORCE_MHZ\" : \"$MHZ\"}" --xvar SIZE=100-100-
 $DRIVER --base-env="{\"CYCLE_TIMER_FORCE_MHZ\" : \"$MHZ\"}" --xvar SIZE=10000-10000-500000 \
     --aggr all > results/toupper-big-$SUFFIX.csv
 
+$DRIVER --base-env="{\"CYCLE_TIMER_FORCE_MHZ\" : \"$MHZ\"}" --xvar SIZE=40000-40000-2000000 \
+    --aggr all > results/toupper-superbig-$SUFFIX.csv
+
