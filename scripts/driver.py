@@ -14,11 +14,16 @@ aggr_fns = {
     "all" : lambda x: x
 }
 
+# for arguments that should be comma-separate lists, we use splitlsit as the type
+splitlist = lambda x: x.split(',')
+
 p = argparse.ArgumentParser(usage='drive the benchmark program')
 p.add_argument('--aggr', help='The aggregation function to use', default="median", choices=aggr_fns)
 p.add_argument('--benches', type=lambda x: x.split(','), help='list of benchmarks to include in the output')
 p.add_argument('--base-env', type=json.loads, help='The base (unvarying) environment as a json string')
 p.add_argument('--xvar', required=True, help='The variable to vary (generally the x axis), in the form VAR=START-INCR-END')
+p.add_argument('--yvars', help='The metrics to use as the data points', type=splitlist, default=['Cycles'])
+
 args = p.parse_args()
 
 aggr = aggr_fns[args.aggr]
@@ -27,6 +32,8 @@ xvar_re = re.compile(r'(\w+)=(\d+)-(\d+)-(\d+)')
 re_match = xvar_re.match(args.xvar)
 if not re_match:
     sys.exit('xvar should look like VAR=START-INCR-END with START, INCR and END all integers')
+
+if (len(args.yvars) == 0): sys.exit('must have at least one yval')
 
 xvar = re_match.group(1)
 xstart = int(re_match.group(2))
@@ -38,8 +45,6 @@ cmd = ['./bench', ','.join(args.benches)] if args.benches else ['./bench']
 print("{} from {} to {}, step {}".format(xvar, xstart, xend, xincr), file=sys.stderr)
 
 need_header = True
-
-yvar = "Cycles"
 
 baseenv = args.base_env if args.base_env else {}
 
@@ -59,36 +64,56 @@ for xval in range(xstart, xend + 1, xincr):
         print("json decode failed, json written to out.json", flush=True, file=sys.stderr)
         raise
 
+    def colname(benchname, yvar):
+        return benchname if len(args.yvars) == 1 else "{} ({})".format(benchname, yvar)
+
     # print the value of the relevant metric for each bench in CSV format like
     # xvar bench1 bench2 ...
     benches = outj['benches']
+
+    # headers = [colname(b) for b in benches for yvar in args.yvars]
+    headers = []
+    for b in benches:
+        for yvar in args.yvars:
+            headers.append(colname(b, yvar))
+
     if need_header:
-        print(xvar, ",", ",".join(benches), sep='')
+        print(xvar, ",", ",".join(headers), sep='')
         need_header = False
 
     # the following code takes (aggregated) results for each benchmark and effectively transposes them
     # so that something like:
-    #     "A" : [1, 2]
-    #     "B" : [3, 4]
+    #     "A" : { "Cycles" : [1, 2] },
+    #     "B" : { "Cycles" : [3, 4] }
     # ends up as:
-    # xval, A, B
-    #    ?, 1, 3
-    #    ?, 2, 4
+    # Cycles, A, B
+    #      ?, 1, 3
+    #      ?, 2, 4
     results = outj['results']
     aggregated = {}
 
-    for b in benches:
-        yvals = results[b][yvar]
-        # ys is an array of values produced by the aggregation function
-        # many aggregation functions (like min or max) produce only a single
-        # value in the array, but some will have mutliple values
-        ys = aggr(yvals)
-        aggregated[b] = ys
-        if len(ys) != len(aggregated[benches[0]]):
-            sys.exit("mismatched result lengths for bench {} and {}".format(b, benches[0]))
 
-    for i in range(len(aggregated[benches[0]])):
+    ylen = None
+    for b in benches:
+        for yvar in args.yvars:
+            cname = colname(b, yvar)
+            yvals = results[b][args.yvars[0]]
+            # ys is an array of values produced by the aggregation function
+            # many aggregation functions (like min or max) produce only a single
+            # value in the array, but some will have mutliple values
+            ys = aggr(yvals)
+            aggregated[cname] = ys
+            if ylen:
+                if len(ys) != ylen:
+                    sys.exit("mismatched result lengths for bench {} and {}".format(b, benches[0]))
+            else:
+                ylen = len(ys)
+
+
+    for i in range(ylen):
         print(xval,end='')
         for b in benches:
-            print(",", aggregated[b][i], sep='', end='')
+            for yvar in args.yvars:
+                cname = colname(b, yvar)
+                print(",", aggregated[cname][i], sep='', end='')
         print()
