@@ -20,10 +20,10 @@ DRIVER=$SCRIPTDIR/driver.py
 BASEENV="{\"CYCLE_TIMER_FORCE_MHZ\" : \"$MHZ\", \"COLS\" : \"Cycles,CPU Cycles\"}"
 
 $DRIVER --base-env="$BASEENV" --xvar SIZE=100-100-10000 \
-    --aggr all > results/toupper-$SUFFIX.csv
+    --aggr all --yvars "Cycles,CPU Cycles" > results/toupper-$SUFFIX.csv
 
 $DRIVER --base-env="$BASEENV" --xvar SIZE=10000-10000-500000 \
-    --aggr all > results/toupper-big-$SUFFIX.csv
+    --aggr all --yvars "Cycles,CPU Cycles" > results/toupper-big-$SUFFIX.csv
 
 # $DRIVER --base-env="$BASEENV" --xvar SIZE=40000-40000-2000000 \
 #     --aggr all > results/toupper-superbig-$SUFFIX.csv
