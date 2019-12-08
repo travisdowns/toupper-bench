@@ -71,7 +71,6 @@ for xval in range(xstart, xend + 1, xincr):
     # xvar bench1 bench2 ...
     benches = outj['benches']
 
-    # headers = [colname(b) for b in benches for yvar in args.yvars]
     headers = []
     for b in benches:
         for yvar in args.yvars:
@@ -97,7 +96,7 @@ for xval in range(xstart, xend + 1, xincr):
     for b in benches:
         for yvar in args.yvars:
             cname = colname(b, yvar)
-            yvals = results[b][args.yvars[0]]
+            yvals = results[b][yvar]
             # ys is an array of values produced by the aggregation function
             # many aggregation functions (like min or max) produce only a single
             # value in the array, but some will have mutliple values
