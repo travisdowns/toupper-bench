@@ -106,3 +106,10 @@ double cl_to_cycles(cl_interval interval) {
     cl_init(false);
     return interval.nanos * ghz;
 }
+
+/*
+ * Take an interval value and "convert" it to nanos.
+ */
+double cl_to_nanos(cl_interval interval) {
+    return interval.nanos;
+}

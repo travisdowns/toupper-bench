@@ -18,7 +18,7 @@ extern "C" {
 
 /**
  * A point in time, or an interval when subtracted. You should probably
- * treat this as an opaque struct, in case I change the implementation 
+ * treat this as an opaque struct, in case I change the implementation
  * someday.
  */
 struct cl_timepoint_ {
@@ -38,7 +38,7 @@ typedef struct cl_interval_ cl_interval;
 /* return the current moment in time as a cycletimer_result */
 cl_timepoint cl_now();
 
-/* 
+/*
  * Return the interval between timepoints first and second.
  * This value is positive iff second occus after first.
  */
@@ -52,6 +52,8 @@ static inline cl_interval cl_delta(cl_timepoint first, cl_timepoint second) {
  */
 double cl_to_cycles(cl_interval interval);
 
+double cl_to_nanos(cl_interval interval);
+
 /*
  * Initialize the cycletimer infrastructure. Mostly this just means calculating
  * the cycle to nanoseconds value (i.e., the CPU frequency). You never *need* to
@@ -60,7 +62,7 @@ double cl_to_cycles(cl_interval interval);
  * but may be lengthy, so this method is offfered so that the user can trigger
  * it at a time of their choosing (and allowing the user to elect whether to
  * print out diagnostic information about the calibration).
- * 
+ *
  * If you pass true for print, dignostic information like the detected CPU
  * frequency is printed to stderr.
  */

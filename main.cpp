@@ -210,6 +210,11 @@ public:
      */
     StampDelta() : empty(true), config{nullptr}, cycle_delta{}, counters{}, string_map{} {}
 
+    double get_nanos() const {
+        assert(!empty);
+        return cl_to_nanos(cycle_delta);
+    }
+
     double get_cycles() const {
         assert(!empty);
         return cl_to_cycles(cycle_delta);
@@ -250,6 +255,8 @@ public:
     static StampDelta max(const StampDelta& l, const StampDelta& r) { return apply(l, r, max_functor{}); }
 };
 
+const PerfEvent DUMMY_EVENT_US = PerfEvent("microseconds", "microsecond");
+
 /**
  * Manages PMU events.
  */
@@ -265,7 +272,7 @@ public:
     EventManager() : next_counter(0), prepared(false) {}
 
     bool add_event(const PerfEvent& event) {
-        if (event == NoEvent) {
+        if (event == NoEvent || event == DUMMY_EVENT_US) {
             return true;
         }
         vprint("Adding event %s\n", to_string(event).c_str());
@@ -517,6 +524,9 @@ public:
 
 private:
     double value(const StampDelta& delta, const PerfEvent& e) const {
+        if (e == DUMMY_EVENT_US) {
+            return delta.get_nanos() / 1000.;
+        }
         auto v = delta.get_counter(e);
         if (v == (uint64_t)-1) {
             throw ColFailed("fail");
@@ -528,7 +538,7 @@ private:
 EventColumn EVENT_COLUMNS[] = {
 
         {"INSTRU", "%*.2f", INST_RETIRED_ANY, NoEvent},
-        {"CPU Cycles", "%*.2f", CPU_CLK_UNHALTED_THREAD, NoEvent},
+        {"True Cycles", "%*.2f", CPU_CLK_UNHALTED_THREAD, NoEvent},
         {"IPC", "%*.2f", INST_RETIRED_ANY, CPU_CLK_UNHALTED_THREAD},
         {"UPC", "%*.2f", UOPS_ISSUED_ANY, CPU_CLK_UNHALTED_THREAD},
         {"MLP1A", "%*.2f", L1D_PEND_MISS_PENDING, CPU_CLK_UNHALTED_THREAD},
@@ -540,6 +550,7 @@ EventColumn EVENT_COLUMNS[] = {
         {"L1_REPL", "%*.2f", L1D_REPLACEMENT, NoEvent},
         {"BR_MISP", "%*.2f", BR_MISP_RETIRED_ALL_BRANCHES, NoEvent},
 
+        {"MHz", "%*.0f", CPU_CLK_UNHALTED_THREAD, DUMMY_EVENT_US},
 
         {"P0", "%*.2f", UOPS_DISPATCHED_PORT_PORT_0, NoEvent},
         {"P1", "%*.2f", UOPS_DISPATCHED_PORT_PORT_1, NoEvent},
