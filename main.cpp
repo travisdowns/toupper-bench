@@ -140,8 +140,8 @@ struct BenchArgs {
     /**
      * Get the intersect args appropriate for the given iteration.
      */
-    bench_args get_args(size_t iter) const {
-        std::memcpy(output, input.data(), input.size());
+    bench_args get_args() const {
+        std::copy(input.begin(), input.end(), output);
         return {output, input.size()};
     }
 };
@@ -812,9 +812,8 @@ void runOne(const test_description* test,
     for (size_t repeat = 0; repeat < bargs.repeat_count; repeat++) {
         Stamp before = config.stamp();
         for (size_t c = 0; c < bargs.iters; ++c) {
-            auto args = bargs.get_args(c);
+            auto args = bargs.get_args();
             test->call_f(args);
-            // _mm_lfence();  // prevent inter-iteration overlap
         }
         Stamp after = config.stamp();
 
